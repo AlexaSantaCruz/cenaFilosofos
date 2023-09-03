@@ -20,10 +20,14 @@ import javax.swing.SwingUtilities;
 public class cenaVisual extends javax.swing.JFrame {
     //variable para iniciar o detener el hilo de lo visual
     boolean iniciar = false;
+    boolean primeraVez=true;
+
     
     //inicializamos una mesa que tiene 5 tenedores
     mesa mesa = new mesa(5);
     Filosofo[] filosofos=new Filosofo[5];
+    Object planificador = new Object();
+
     
 
     
@@ -236,41 +240,36 @@ public class cenaVisual extends javax.swing.JFrame {
 
     private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarActionPerformed
         
-        boolean primeraVez=false;
         
         //para inicializar el hilo
         iniciar=true;
         
-        if(primeraVez==false){
-            primeraVez=true;
+        if(primeraVez==true){
+            primeraVez=false;
             //empezar 5 hilos, cada uno de ellos emula a un filosofo
             for (int i = 1; i <= 5; i++) {
-                filosofos[i-1] = new Filosofo(mesa, i);
+                filosofos[i-1] = new Filosofo(mesa, i, planificador);
                 filosofos[i-1].start();
             }  
         
         }
         
          Thread uiUpdateThread = new Thread(() -> {
-            while (iniciar) {
-                // Actualizar la interfaz gráfica en el hilo de la UI
+            while (true) {
                 SwingUtilities.invokeLater(() -> updateUI(filosofos));
 
-                try {
-                    Thread.sleep(100); // Esperar antes de actualizar nuevamente
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+                     // Esperar por el objeto compartido y luego actualizar la interfaz
+                     synchronized (planificador) {
+                         try {
+                             planificador.wait(); // Esperar a que los filósofos notifiquen
+                         } catch (InterruptedException e) {
+                             e.printStackTrace();
+                         }
+                     }
+                 }
+             });
 
         uiUpdateThread.start();
-    
-
-        
-       
-
-        
 
     }//GEN-LAST:event_btnIniciarActionPerformed
 
