@@ -44,7 +44,7 @@ public class Filosofo extends Thread{
         System.out.println("Filosofo"+ filosofos + "esta pensando");
         setEstaComiendo(false);
         try{
-            sleep((long)(Math.random()*400));
+            sleep((long)(Math.random()*3000));
             
         }catch(InterruptedException ex){ 
         }
